@@ -1,0 +1,9 @@
+.idea
+.gradle
+eclipse
+gradle.properties
+gradlew.bat
+gradlew
+gradle
+
+workspace-1.12.2/src
