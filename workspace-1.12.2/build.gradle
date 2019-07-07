@@ -33,6 +33,7 @@ minecraft {
     mappings = "snapshot_20171003"
 
     replace "@VERSION@", project.version
+    replace "@FINGERPRINT@", project.signSHA1
     replaceIn "SimpleWaypointsMod.java"
 }
 
@@ -50,7 +51,7 @@ processResources {
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
         
@@ -74,3 +75,14 @@ shadowJar {
     exclude 'dummyThing'
     relocate 'nge.lk.mods.commonlib', 'nge.lk.mods.simpletabs.common'
 }
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    keyStore = project.keyStore
+    alias = project.keyStoreAlias
+    storePass = project.keyStorePass
+    keyPass = project.keyStoreKeyPass
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+build.dependsOn signJar
