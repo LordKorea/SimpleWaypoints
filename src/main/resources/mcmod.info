@@ -1,0 +1,16 @@
+[
+{
+  "modid": "simplewaypoints",
+  "name": "SimpleWaypoints",
+  "description": "Easy and light-weight waypoints",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["LordKorea"],
+  "credits": "Feature ideas by Rinjani",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
