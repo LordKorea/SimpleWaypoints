@@ -98,6 +98,28 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
         } else if (buttonElement == backButton) {
             mc.displayGuiScreen(parent);
         }
+
+        if (buttonElement == saveButton || buttonElement == saveCloseButton) {
+            final boolean close = buttonElement == saveCloseButton;
+
+            final int[] coords = new int[3];
+            for (int i = 0; i < 3; i++) {
+                coords[i] = Integer.parseInt(coordinateElements[i].getTextField().getText());
+            }
+
+            final Waypoint newWaypoint = new Waypoint(nameElement.getTextField().getText(), coords[0], coords[1],
+                    coords[2], selectedColor);
+            if (!isNewWaypoint()) {
+                // TODO delete old
+            }
+            manager.addWaypoint(newWaypoint);
+
+            if (close) {
+                mc.displayGuiScreen(null);
+            } else {
+                mc.displayGuiScreen(parent);
+            }
+        }
     }
 
     @Override
@@ -150,7 +172,7 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
         addBlank(new Positioning().breakRow().absoluteHeight(3));
 
         final String[] captions = {"X:", "Y:", "Z:"};
-        final double[] coords = {0.0, 0.0, 0.0};
+        final int[] coords = new int[3];
         if (!isNewWaypoint()) {
             coords[0] = editWaypoint.getX();
             coords[1] = editWaypoint.getY();

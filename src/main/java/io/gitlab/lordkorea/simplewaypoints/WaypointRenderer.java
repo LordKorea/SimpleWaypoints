@@ -26,11 +26,13 @@ public class WaypointRenderer {
     /**
      * Renders a waypoint.
      *
-     * @param waypoint The waypoint to render.
+     * @param waypoint  The waypoint to render.
      * @param cameraPos The camera position to render from.
      */
     public void render(final Waypoint waypoint, final Vec3d cameraPos, final Vec2f cameraRotation) {
         final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
+        final Vec3d waypointPos = new Vec3d(waypoint.getX() + 0.5, waypoint.getY() + 0.5,
+                waypoint.getZ() + 0.5);
 
         // Setup GL state.
         GlStateManager.pushMatrix();
@@ -41,16 +43,14 @@ public class WaypointRenderer {
         GlStateManager.enableTexture2D();
 
         // Determine the distance and the waypoint text.
-        final double distance = cameraPos.subtract(new Vec3d(waypoint.getX(), waypoint.getY(), waypoint.getZ()))
-                .lengthVector();
+        final double distance = cameraPos.subtract(waypointPos).lengthVector();
         final String waypointText = waypoint.getName() + String.format(" (%dm)", (int) distance);
 
         // Determine the eye-to-waypoint vector.
-        final Vec3d eyeToWaypoint = new Vec3d(waypoint.getX(), waypoint.getY(), waypoint.getZ()).subtract(cameraPos)
-                .normalize().scale(Math.min(10.0, distance));
+        final Vec3d eyeToWaypoint = waypointPos.subtract(cameraPos).normalize().scale(Math.min(10.0, distance));
 
-        // Translate to waypoint position.
-        GlStateManager.translate(eyeToWaypoint.x, eyeToWaypoint.y, eyeToWaypoint.z);
+        // Translate to waypoint position. The 1.5f is magic, I'm unsure where it is coming from.
+        GlStateManager.translate(eyeToWaypoint.x, eyeToWaypoint.y + 1.5f, eyeToWaypoint.z);
 
         // Align to camera.
         GlStateManager.rotate(-cameraRotation.x, 0.0f, 1.0f, 0.0f);
@@ -77,19 +77,19 @@ public class WaypointRenderer {
             final Tessellator tessellator = Tessellator.getInstance();
             final BufferBuilder builder = tessellator.getBuffer();
             builder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
-            builder.pos(0.0, 0.0, 0.0).tex(0.0, 0.0).endVertex();
-            builder.pos(1.0, 1.0, 0.0).tex(1.0, 1.0).endVertex();
-            builder.pos(1.0, 0.0, 0.0).tex(1.0, 0.0).endVertex();
-            builder.pos(0.0, 0.0, 0.0).tex(0.0, 0.0).endVertex();
-            builder.pos(0.0, 1.0, 0.0).tex(0.0, 1.0).endVertex();
-            builder.pos(1.0, 1.0, 0.0).tex(1.0, 1.0).endVertex();
+            builder.pos(0.0 - 0.5, 0.0 - 0.5, 0.0).tex(0.0, 0.0).endVertex();
+            builder.pos(1.0 - 0.5, 1.0 - 0.5, 0.0).tex(1.0, 1.0).endVertex();
+            builder.pos(1.0 - 0.5, 0.0 - 0.5, 0.0).tex(1.0, 0.0).endVertex();
+            builder.pos(0.0 - 0.5, 0.0 - 0.5, 0.0).tex(0.0, 0.0).endVertex();
+            builder.pos(0.0 - 0.5, 1.0 - 0.5, 0.0).tex(0.0, 1.0).endVertex();
+            builder.pos(1.0 - 0.5, 1.0 - 0.5, 0.0).tex(1.0, 1.0).endVertex();
             tessellator.draw();
 
             // Text render. Downscaled 16x, also needs to be rolled 180°.
             GlStateManager.scale(1.0f / 16.0f, 1.0f / 16.0f, 1.0f / 16.0f);
             GlStateManager.rotate(180.0f, 0.0f, 0.0f, 1.0f);
-            fontRenderer.drawString(waypointText, -fontRenderer.getStringWidth(waypointText) / 2.0f - 8.0f,
-                    -24.0f, waypointColor, false);
+            fontRenderer.drawString(waypointText, -fontRenderer.getStringWidth(waypointText) / 2.0f,
+                    -16.0f, waypointColor, false);
             GlStateManager.rotate(180.0f, 0.0f, 0.0f, 1.0f);
             GlStateManager.scale(16.0f, 16.0f, 16.0f);
 
@@ -101,6 +101,7 @@ public class WaypointRenderer {
         // Undo GL state setup.
         GlStateManager.disableBlend();
         GlStateManager.enableLighting();
+        GlStateManager.enableDepth();
         GlStateManager.enableCull();
         GlStateManager.popMatrix();
     }

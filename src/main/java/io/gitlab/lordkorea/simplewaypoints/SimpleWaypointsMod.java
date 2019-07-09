@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -77,6 +78,7 @@ public final class SimpleWaypointsMod {
         waypointRenderer = new WaypointRenderer();
         managerKey = new KeyBinding("Waypoint Manager", Keyboard.KEY_F10, "Simple Waypoints");
 
+        ClientRegistry.registerKeyBinding(managerKey);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
