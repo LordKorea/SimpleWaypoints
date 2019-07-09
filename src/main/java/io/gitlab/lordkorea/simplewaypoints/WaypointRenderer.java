@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
@@ -16,6 +17,11 @@ import org.lwjgl.opengl.GL14;
  * Used for rendering waypoints in the world.
  */
 public class WaypointRenderer {
+
+    /**
+     * The distance at which a projected position is used and alpha is interpolated.
+     */
+    private static final float FADE_DISTANCE = 10.0f;
 
     /**
      * The waypoint marker.
@@ -43,11 +49,12 @@ public class WaypointRenderer {
         GlStateManager.enableTexture2D();
 
         // Determine the distance and the waypoint text.
-        final double distance = cameraPos.subtract(waypointPos).lengthVector();
+        final float distance = (float) cameraPos.subtract(waypointPos).lengthVector();
         final String waypointText = waypoint.getName() + String.format(" (%dm)", (int) distance);
 
         // Determine the eye-to-waypoint vector.
-        final Vec3d eyeToWaypoint = waypointPos.subtract(cameraPos).normalize().scale(Math.min(10.0, distance));
+        final Vec3d eyeToWaypoint = waypointPos.subtract(cameraPos).normalize()
+                .scale(Math.min(FADE_DISTANCE, distance));
 
         // Translate to waypoint position. The 1.5f is magic, I'm unsure where it is coming from.
         GlStateManager.translate(eyeToWaypoint.x, eyeToWaypoint.y + 1.5f, eyeToWaypoint.z);
@@ -70,6 +77,8 @@ public class WaypointRenderer {
                 GlStateManager.DestFactor.ONE_MINUS_CONSTANT_ALPHA);
 
         // Setup first pass: 50% opacity.
+        final float distanceFactor = MathHelper.clamp(distance - FADE_DISTANCE, 0.0f, 64.0f) / 64.0f;
+        final float finalAlpha = 1.0f - distanceFactor * 0.5f;
         GL14.glBlendColor(1.0f, 1.0f, 1.0f, 0.5f);
         for (int i = 0; i < 2; i++) {
             // Need to bind texture here, as font rendering overrides this before second pass.
@@ -94,7 +103,7 @@ public class WaypointRenderer {
             GlStateManager.scale(16.0f, 16.0f, 16.0f);
 
             // Setup second pass: 100% opacity, depth.
-            GL14.glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+            GL14.glBlendColor(1.0f, 1.0f, 1.0f, finalAlpha);
             GlStateManager.enableDepth();
         }
 
