@@ -10,19 +10,16 @@ buildscript {
 }
 
 plugins {
-    id "io.franzbecker.gradle-lombok" version '1.6'
+    id 'io.franzbecker.gradle-lombok' version '1.6'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
 }
-
 apply plugin: 'net.minecraftforge.gradle.forge'
-//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
-
 
 version = "1.0.0-1.12.2.2838"
 group = "io.gitlab.lordkorea.simplewaypoints"
 archivesBaseName = "simplewaypoints"
 
-sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }

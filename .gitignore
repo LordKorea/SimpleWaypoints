@@ -5,5 +5,8 @@ gradle.properties
 gradlew.bat
 gradlew
 gradle
+build
+classes
+run
 
 workspace-1.12.2/src
