@@ -110,9 +110,10 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
             final Waypoint newWaypoint = new Waypoint(nameElement.getTextField().getText(), coords[0], coords[1],
                     coords[2], selectedColor);
             if (!isNewWaypoint()) {
-                // TODO delete old
+                manager.removeWaypoint(editWaypoint);
             }
             manager.addWaypoint(newWaypoint);
+            manager.save();
 
             if (close) {
                 mc.displayGuiScreen(null);

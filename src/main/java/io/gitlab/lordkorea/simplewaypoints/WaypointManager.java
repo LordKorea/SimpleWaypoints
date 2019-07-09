@@ -1,9 +1,9 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 /**
  * Keeps track of and manages waypoints.
@@ -11,9 +11,9 @@ import java.util.List;
 public class WaypointManager {
 
     /**
-     * The list in which all waypoints that are registered are stored.
+     * The collection in which all waypoints that are registered are stored.
      */
-    private final List<Waypoint> waypoints = new ArrayList<>();
+    private final Collection<Waypoint> waypoints = new LinkedHashSet<>();
 
     /**
      * The waypoint IO which is used for storing and loading waypoints.
@@ -51,8 +51,16 @@ public class WaypointManager {
      * @param waypoint The waypoint.
      */
     public void addWaypoint(final Waypoint waypoint) {
-        waypoints.add(waypoint);
-        dirty = true;
+        dirty = waypoints.add(waypoint) || dirty;
+    }
+
+    /**
+     * Removes a waypoint.
+     *
+     * @param waypoint The waypoint.
+     */
+    public void removeWaypoint(final Waypoint waypoint) {
+        dirty = waypoints.remove(waypoint) || dirty;
     }
 
     /**
@@ -61,6 +69,6 @@ public class WaypointManager {
      * @return The waypoints.
      */
     public Iterable<Waypoint> getWaypoints() {
-        return Collections.unmodifiableList(waypoints);
+        return Collections.unmodifiableCollection(waypoints);
     }
 }
