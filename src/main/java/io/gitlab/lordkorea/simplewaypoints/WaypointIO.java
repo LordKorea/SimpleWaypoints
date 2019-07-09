@@ -73,8 +73,8 @@ public class WaypointIO {
      * @return The serialized waypoint.
      */
     private static String serializeWaypoint(final Waypoint waypoint) {
-        return String.join("\0", waypoint.getName(), Double.toString(waypoint.getX()),
-                Double.toString(waypoint.getY()), Double.toString(waypoint.getZ()),
+        return String.join("\0", waypoint.getName(), Integer.toString(waypoint.getX()),
+                Integer.toString(waypoint.getY()), Integer.toString(waypoint.getZ()),
                 Integer.toString(waypoint.getColorRGB()));
     }
 
@@ -86,7 +86,7 @@ public class WaypointIO {
      */
     private static Waypoint deserializeWaypoint(final String serial) {
         final String[] parts = serial.split("\0");
-        return new Waypoint(parts[0], Double.parseDouble(parts[1]), Double.parseDouble(parts[2]),
-                Double.parseDouble(parts[3]), Integer.parseInt(parts[4]));
+        return new Waypoint(parts[0], Integer.parseInt(parts[1]), Integer.parseInt(parts[2]),
+                Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
     }
 }

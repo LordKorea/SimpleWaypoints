@@ -20,17 +20,17 @@ public class Waypoint {
     /**
      * The x position of this waypoint.
      */
-    private final double x;
+    private final int x;
 
     /**
      * The y position of this waypoint.
      */
-    private final double y;
+    private final int y;
 
     /**
      * The z position of this waypoint.
      */
-    private final double z;
+    private final int z;
 
     /**
      * The RGB encoded color of this waypoint.

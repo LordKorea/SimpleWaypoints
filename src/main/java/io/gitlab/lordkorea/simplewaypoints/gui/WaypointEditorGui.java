@@ -95,6 +95,8 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
     public void accept(final ButtonElement buttonElement) {
         if (buttonElement == colorButton) {
             mc.displayGuiScreen(new GuiColorPicker(selectedColor, this));
+        } else if (buttonElement == backButton) {
+            mc.displayGuiScreen(parent);
         }
     }
 
@@ -114,13 +116,8 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
 
         for (int i = 0; i < 3; i++) {
             try {
-                final double coordinate = Double.parseDouble(coordinateElements[i].getTextField().getText());
-                if (Double.isNaN(coordinate) || Math.abs(coordinate) > 3e7) {
-                    canSave = false;
-                    break;
-                }
-
-                if (i == 1 && (coordinate < 0 || coordinate > 256)) {  // Y-element has different limits.
+                final int coordinate = Integer.parseInt(coordinateElements[i].getTextField().getText());
+                if (Math.abs(coordinate) > 3e7 || (i == 1 && (coordinate < 0 || coordinate > 256))) {
                     canSave = false;
                     break;
                 }
@@ -159,13 +156,16 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
             coords[1] = editWaypoint.getY();
             coords[2] = editWaypoint.getZ();
         } else {
-            // TODO what?
+            final Minecraft mc = Minecraft.getMinecraft();
+            coords[0] = (int) Math.floor(mc.player.posX);
+            coords[1] = (int) Math.floor(mc.player.posY + mc.player.eyeHeight);
+            coords[2] = (int) Math.floor(mc.player.posZ);
         }
         for (int i = 0; i < 3; i++) {
             addText(new Positioning()).setText(captions[i], 0xAAAAAA);
             coordinateElements[i] = addInput(new Positioning().absoluteWidth(70).absoluteHeight(20));
             coordinateElements[i].getTextField().setMaxStringLength(16);
-            coordinateElements[i].getTextField().setText(isNewWaypoint() ? "" : String.valueOf(coords[i]));
+            coordinateElements[i].getTextField().setText(String.valueOf(coords[i]));
             coordinateElements[i].getTextField().setCursorPositionZero();
             addBlank(new Positioning().relativeWidth(3));
         }
