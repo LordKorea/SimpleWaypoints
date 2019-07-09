@@ -1,11 +1,13 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a waypoint.
  */
+@EqualsAndHashCode
 @Getter
 @RequiredArgsConstructor
 public class Waypoint {

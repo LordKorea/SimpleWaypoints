@@ -1,5 +1,6 @@
-package io.gitlab.lordkorea.simplewaypoints;
+package io.gitlab.lordkorea.simplewaypoints.gui;
 
+import io.gitlab.lordkorea.simplewaypoints.WaypointManager;
 import nge.lk.mods.commonlib.gui.factory.GuiFactory;
 import nge.lk.mods.commonlib.gui.factory.Positioning;
 import nge.lk.mods.commonlib.gui.factory.element.ButtonElement;
@@ -10,6 +11,11 @@ import java.util.function.Consumer;
  * The GUI used for managing waypoints.
  */
 public class WaypointManagerGui extends GuiFactory implements Consumer<ButtonElement> {
+
+    /**
+     * The waypoint manager.
+     */
+    private WaypointManager manager;
 
     /**
      * The button which is used for creating waypoints.
@@ -29,13 +35,16 @@ public class WaypointManagerGui extends GuiFactory implements Consumer<ButtonEle
     /**
      * Constructor.
      */
-    public WaypointManagerGui() {
+    public WaypointManagerGui(final WaypointManager manager) {
+        this.manager = manager;
         createGui();
     }
 
     @Override
     public void accept(final ButtonElement buttonElement) {
-        // TODO
+        if (buttonElement == createWaypointButton) {
+            mc.displayGuiScreen(new WaypointEditorGui(this, manager, null));
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
+import io.gitlab.lordkorea.simplewaypoints.gui.WaypointManagerGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -60,11 +61,6 @@ public final class SimpleWaypointsMod {
     private WaypointRenderer waypointRenderer;
 
     /**
-     * The waypoint manager GUI.
-     */
-    private WaypointManagerGui waypointManagerGui;
-
-    /**
      * The key binding for the waypoint manager GUI.
      */
     private KeyBinding managerKey;
@@ -79,7 +75,6 @@ public final class SimpleWaypointsMod {
     public void onInit(final FMLInitializationEvent event) {
         waypointManager = new WaypointManager(storageFile);
         waypointRenderer = new WaypointRenderer();
-        waypointManagerGui = new WaypointManagerGui();
         managerKey = new KeyBinding("Waypoint Manager", Keyboard.KEY_F10, "Simple Waypoints");
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -103,7 +98,7 @@ public final class SimpleWaypointsMod {
     @SubscribeEvent
     public void onKeyPress(final InputEvent.KeyInputEvent event) {
         if (managerKey.isPressed()) {
-            Minecraft.getMinecraft().displayGuiScreen(waypointManagerGui);
+            Minecraft.getMinecraft().displayGuiScreen(new WaypointManagerGui(waypointManager));
         }
     }
 }

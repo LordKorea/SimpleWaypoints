@@ -45,6 +45,16 @@ dependencies {
     compile 'nge.lk.mods.commonlib:commonlib:1.0.0-1.12.2.2838'
 }
 
+task copyDependencyResources(type: Copy) {
+    configurations.compile.files.collect {
+        from zipTree(it).matching {
+            include "assets/**"
+        }
+    }
+    into "$buildDir/resources/main"
+}
+tasks.processResources.dependsOn copyDependencyResources
+
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -64,7 +74,6 @@ processResources {
 reobf {
     shadowJar { mappingType = 'SEARGE' }
 }
-
 tasks.build.dependsOn reobfShadowJar
 
 shadowJar {
@@ -73,7 +82,7 @@ shadowJar {
         include(dependency('nge.lk.mods.commonlib:commonlib:1.0.0-1.12.2.2838'))
     }
     exclude 'dummyThing'
-    relocate 'nge.lk.mods.commonlib', 'nge.lk.mods.simpletabs.common'
+    relocate 'nge.lk.mods.commonlib', 'nge.lk.mods.simplewaypoints.common'
 }
 
 task signJar(type: SignJar, dependsOn: reobfJar) {
@@ -84,5 +93,4 @@ task signJar(type: SignJar, dependsOn: reobfJar) {
     inputFile = jar.archivePath
     outputFile = jar.archivePath
 }
-
-build.dependsOn signJar
+tasks.build.dependsOn signJar
