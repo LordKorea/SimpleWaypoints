@@ -1,6 +1,7 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -10,7 +11,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import nge.lk.mods.commonlib.util.DebugUtil;
+import org.lwjgl.input.Keyboard;
 
 import java.io.File;
 
@@ -56,6 +59,16 @@ public final class SimpleWaypointsMod {
      */
     private WaypointRenderer waypointRenderer;
 
+    /**
+     * The waypoint manager GUI.
+     */
+    private WaypointManagerGui waypointManagerGui;
+
+    /**
+     * The key binding for the waypoint manager GUI.
+     */
+    private KeyBinding managerKey;
+
     @Mod.EventHandler
     public void onPreInit(final FMLPreInitializationEvent event) {
         DebugUtil.initializeLogger(MODID);
@@ -65,8 +78,9 @@ public final class SimpleWaypointsMod {
     @Mod.EventHandler
     public void onInit(final FMLInitializationEvent event) {
         waypointManager = new WaypointManager(storageFile);
-        waypointManager.addWaypoint(new Waypoint("Test", 0.0, 0.0, 0.0, 0x00AA00));
         waypointRenderer = new WaypointRenderer();
+        waypointManagerGui = new WaypointManagerGui();
+        managerKey = new KeyBinding("Waypoint Manager", Keyboard.KEY_F10, "Simple Waypoints");
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -83,6 +97,13 @@ public final class SimpleWaypointsMod {
 
         for (final Waypoint waypoint : waypointManager.getWaypoints()) {
             waypointRenderer.render(waypoint, cameraPos, cameraRotation);
+        }
+    }
+
+    @SubscribeEvent
+    public void onKeyPress(final InputEvent.KeyInputEvent event) {
+        if (managerKey.isPressed()) {
+            Minecraft.getMinecraft().displayGuiScreen(waypointManagerGui);
         }
     }
 }
