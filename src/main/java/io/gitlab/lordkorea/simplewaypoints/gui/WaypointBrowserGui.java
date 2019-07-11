@@ -11,12 +11,18 @@ import nge.lk.mods.commonlib.gui.designer.element.Label;
 import nge.lk.mods.commonlib.gui.designer.util.Alignment;
 import nge.lk.mods.commonlib.gui.designer.util.Padding;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
  * The GUI used for managing waypoints.
  */
 public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> {
+
+    /**
+     * The number of entries per page.
+     */
+    private static final int ENTRIES_PER_PAGE = 10;
 
     /**
      * The parent screen.
@@ -62,7 +68,13 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
         contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         int i = 0;
-        for (final Waypoint waypoint : manager.getWaypoints()) {
+        int skip = pageOffset;
+        final Collection<Waypoint> waypoints = manager.getWaypoints();
+        for (final Waypoint waypoint : waypoints) {
+            if (skip-- > 0) {
+                continue;
+            }
+
             final RenderProperties.RenderPropertiesBuilder properties = RenderProperties.builder().relativeWidth(45)
                     .absoluteHeight(20);
             if (i % 2 != 0) {
@@ -79,7 +91,9 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
             }
             i++;
 
-            // TODO consider page offset
+            if (i == ENTRIES_PER_PAGE) {
+                break;
+            }
         }
         contentPane.commitBucket(Alignment.TOP);
 
@@ -87,6 +101,25 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
                 Button.relativeProperties(30, true, true));
         closeButton.getButton().displayString = "Back";
         contentPane.addRenderBucket(Alignment.BOTTOM, closeButton);
+
+        // Show pagination buttons.
+        if (pageOffset > 0) {
+            contentPane.addToActive(Box.relativeHorizontalPlaceholder(15));
+            final Button prevButton = new Button(b -> mc.displayGuiScreen(
+                    new WaypointBrowserGui(parent, manager, pageOffset - ENTRIES_PER_PAGE)),
+                    Button.relativeProperties(15));
+            prevButton.getButton().displayString = "<<<";
+            contentPane.addToActive(prevButton);
+        }
+        if (waypoints.size() - pageOffset > ENTRIES_PER_PAGE) {
+            contentPane.addToActive(Box.relativeHorizontalPlaceholder(15, Alignment.RIGHT));
+            final Button nextButton = new Button(b -> mc.displayGuiScreen(
+                    new WaypointBrowserGui(parent, manager, pageOffset + ENTRIES_PER_PAGE)),
+                    Button.relativeProperties(15, false, false, Alignment.RIGHT));
+            nextButton.getButton().displayString = ">>>";
+            contentPane.addToActive(nextButton);
+        }
+        contentPane.commitBucket(Alignment.BOTTOM);
 
         root.addRenderBucket(Alignment.TOP, contentPane);
     }

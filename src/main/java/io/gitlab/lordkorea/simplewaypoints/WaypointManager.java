@@ -68,7 +68,7 @@ public class WaypointManager {
      *
      * @return The waypoints.
      */
-    public Iterable<Waypoint> getWaypoints() {
+    public Collection<Waypoint> getWaypoints() {
         return Collections.unmodifiableCollection(waypoints);
     }
 }
