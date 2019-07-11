@@ -85,7 +85,7 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         this.parent = parent;
         this.manager = manager;
         this.editWaypoint = editWaypoint;
-        selectedColor = RANDOM.nextInt(0xFFFFFF + 1);
+        selectedColor = isNewWaypoint() ? RANDOM.nextInt(0xFFFFFF + 1) : editWaypoint.getColorRGB();
         createGui();
     }
 

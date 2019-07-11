@@ -51,7 +51,8 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
 
     @Override
     public void accept(final Button buttonElement) {
-        // TODO
+        final Waypoint waypoint = (Waypoint) buttonElement.getMetadata();
+        mc.displayGuiScreen(new WaypointEditorGui(parent, manager, waypoint));
     }
 
     @Override
@@ -84,6 +85,7 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
             final Button button = new Button(this, properties.build());
             button.getButton().displayString = waypoint.getShortName();
             button.getButton().packedFGColour = waypoint.getColorRGB();
+            button.setMetadata(waypoint);
             contentPane.addToActive(button);
 
             if (i % 2 != 0) {
