@@ -59,24 +59,18 @@ public class WaypointManagerGui extends GuiDesigner implements Consumer<Button> 
                 Padding.relative(5, 5, 10, 5));
 
         contentPane.addToActive(Label.centered("Waypoint Manager", 0xAAAAAA));
-        contentPane.addToActive(Box.relativeVerticalSpacer(7));
+        contentPane.addToActive(Box.relativeVerticalSpacer(15));
 
         createWaypointButton = new Button(this,
                 Button.relativeProperties(35, true, true));
         createWaypointButton.getButton().displayString = "Create Waypoint";
         contentPane.addToActive(createWaypointButton);
-        contentPane.addToActive(Box.relativeVerticalSpacer(7));
+        contentPane.addToActive(Box.relativeVerticalSpacer(10));
 
         browseWaypointsButton = new Button(this,
                 Button.relativeProperties(35, true, true));
         browseWaypointsButton.getButton().displayString = "Browse Waypoints";
         contentPane.addToActive(browseWaypointsButton);
-        contentPane.addToActive(Box.relativeVerticalSpacer(7));
-
-        deleteWaypointsButton = new Button(this,
-                Button.relativeProperties(35, true, true));
-        deleteWaypointsButton.getButton().displayString = "Delete Waypoints";
-        contentPane.addToActive(deleteWaypointsButton);
         contentPane.commitBucket(Alignment.TOP);
 
         final Button closeButton = new Button(b -> closeGui(),

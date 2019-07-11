@@ -64,6 +64,11 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
     private int selectedColor;
 
     /**
+     * The button for deleting the waypoint.
+     */
+    private Button deleteButton;
+
+    /**
      * The button for saving and going to the parent menu.
      */
     private Button saveButton;
@@ -121,6 +126,10 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
             } else {
                 mc.displayGuiScreen(parent);
             }
+        } else if (buttonElement == deleteButton) {
+            manager.removeWaypoint(editWaypoint);
+            manager.save();
+            mc.displayGuiScreen(parent);
         }
     }
 
@@ -231,8 +240,17 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         backButton = new Button(this, Button.relativeProperties(30));
         backButton.getButton().displayString = "Back";
         contentPane.addToActive(backButton);
-
         contentPane.commitBucket(Alignment.BOTTOM);
+
+        // Add a delete button, if a waypoint is being edited.
+        if (!isNewWaypoint()) {
+            deleteButton = new Button(this, Button.relativeProperties(15, false,
+                    false, Alignment.RIGHT));
+            deleteButton.getButton().displayString = "Delete";
+            deleteButton.getButton().packedFGColour = 0xAA0000;
+            contentPane.addRenderBucket(Alignment.TOP, deleteButton);
+        }
+
         root.addRenderBucket(Alignment.TOP, contentPane);
     }
 
