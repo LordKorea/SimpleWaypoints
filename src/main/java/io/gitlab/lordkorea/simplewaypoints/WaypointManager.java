@@ -1,5 +1,8 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
+import lombok.Getter;
+import net.minecraft.client.settings.KeyBinding;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +24,11 @@ public class WaypointManager {
     private final WaypointIO waypointIO;
 
     /**
+     * The quick waypoint key binding.
+     */
+    private @Getter final KeyBinding quickWaypointKey;
+
+    /**
      * Whether waypoints have changed and need to be saved.
      */
     private boolean dirty = false;
@@ -30,8 +38,9 @@ public class WaypointManager {
      *
      * @param storageFile The file which is used for storing waypoints.
      */
-    public WaypointManager(final File storageFile) {
+    public WaypointManager(final File storageFile, final KeyBinding quickWaypointKey) {
         waypointIO = new WaypointIO(storageFile);
+        this.quickWaypointKey = quickWaypointKey;
         waypoints.addAll(waypointIO.loadWaypoints());
     }
 

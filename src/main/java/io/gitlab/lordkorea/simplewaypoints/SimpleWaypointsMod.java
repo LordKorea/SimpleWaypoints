@@ -1,5 +1,6 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
+import io.gitlab.lordkorea.simplewaypoints.gui.WaypointEditorGui;
 import io.gitlab.lordkorea.simplewaypoints.gui.WaypointManagerGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -7,6 +8,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -18,6 +21,7 @@ import nge.lk.mods.commonlib.util.DebugUtil;
 import org.lwjgl.input.Keyboard;
 
 import java.io.File;
+import java.util.Random;
 
 /**
  * The main class of the mod.
@@ -25,6 +29,11 @@ import java.io.File;
 @Mod(modid = SimpleWaypointsMod.MODID, name = SimpleWaypointsMod.MODNAME, version = SimpleWaypointsMod.VERSION,
         certificateFingerprint = SimpleWaypointsMod.FINGERPRINT)
 public final class SimpleWaypointsMod {
+
+    /**
+     * A random number generator.
+     */
+    private static final Random RANDOM = new Random();
 
     /**
      * The mod ID of this mod.
@@ -66,6 +75,11 @@ public final class SimpleWaypointsMod {
      */
     private KeyBinding managerKey;
 
+    /**
+     * The key binding used for quickly creating a waypoint.
+     */
+    private KeyBinding quickWaypointKey;
+
     @Mod.EventHandler
     public void onPreInit(final FMLPreInitializationEvent event) {
         DebugUtil.initializeLogger(MODID);
@@ -74,11 +88,16 @@ public final class SimpleWaypointsMod {
 
     @Mod.EventHandler
     public void onInit(final FMLInitializationEvent event) {
-        waypointManager = new WaypointManager(storageFile);
-        waypointRenderer = new WaypointRenderer();
-        managerKey = new KeyBinding("Waypoint Manager", Keyboard.KEY_F10, "Simple Waypoints");
-
+        managerKey = new KeyBinding("Waypoint Manager", KeyConflictContext.IN_GAME, Keyboard.KEY_F10,
+                "Simple Waypoints");
+        quickWaypointKey = new KeyBinding("Quick Waypoint", KeyConflictContext.IN_GAME, KeyModifier.CONTROL,
+                Keyboard.KEY_RETURN, "Simple Waypoints");
         ClientRegistry.registerKeyBinding(managerKey);
+        ClientRegistry.registerKeyBinding(quickWaypointKey);
+
+        waypointManager = new WaypointManager(storageFile, quickWaypointKey);
+        waypointRenderer = new WaypointRenderer();
+
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -99,8 +118,18 @@ public final class SimpleWaypointsMod {
 
     @SubscribeEvent
     public void onKeyPress(final InputEvent.KeyInputEvent event) {
+        final Minecraft mc = Minecraft.getMinecraft();
+
         if (managerKey.isPressed()) {
-            Minecraft.getMinecraft().displayGuiScreen(new WaypointManagerGui(waypointManager));
+            mc.displayGuiScreen(new WaypointManagerGui(waypointManager));
+        }
+
+        if (quickWaypointKey.isPressed()) {
+            final Waypoint quickPoint = new Waypoint("[+]", (int) Math.floor(mc.player.posX),
+                    (int) Math.floor(mc.player.posY + mc.player.eyeHeight), (int) Math.floor(mc.player.posZ),
+                    RANDOM.nextInt(0xFFFFFF + 1));
+            waypointManager.addWaypoint(quickPoint);
+            waypointManager.save();
         }
     }
 }

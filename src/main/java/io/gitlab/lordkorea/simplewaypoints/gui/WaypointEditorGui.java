@@ -218,7 +218,9 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         if (isNewWaypoint()) {
-            contentPane.addToActive(Label.regular("Tip: In a hurry? You can use ??? to",
+            final String quickWaypointText = manager.getQuickWaypointKey().getDisplayName();
+            contentPane.addToActive(
+                    Label.regular(String.format("Tip: In a hurry? You can use %s to", quickWaypointText),
                     0xAAAAAA, true));
             contentPane.addToActive(Label.regular("quickly create an anonymous waypoint",
                     0xAAAAAA, true));
