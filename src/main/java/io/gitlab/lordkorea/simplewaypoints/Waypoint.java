@@ -36,4 +36,17 @@ public class Waypoint {
      * The RGB encoded color of this waypoint.
      */
     private final int colorRGB;
+
+    /**
+     * Obtains the short name of the waypoint.
+     *
+     * @return The short name.
+     */
+    public String getShortName() {
+        if (name.length() > 21) {
+            return name.substring(0, 21) + "...";
+        } else {
+            return name;
+        }
+    }
 }

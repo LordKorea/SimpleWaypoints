@@ -4,13 +4,16 @@ import io.gitlab.lordkorea.simplewaypoints.Waypoint;
 import io.gitlab.lordkorea.simplewaypoints.WaypointManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import nge.lk.mods.commonlib.gui.ColorPickerGui;
 import nge.lk.mods.commonlib.gui.ColorPicking;
-import nge.lk.mods.commonlib.gui.GuiColorPicker;
-import nge.lk.mods.commonlib.gui.factory.GuiFactory;
-import nge.lk.mods.commonlib.gui.factory.Positioning;
-import nge.lk.mods.commonlib.gui.factory.element.ButtonElement;
-import nge.lk.mods.commonlib.gui.factory.element.InputElement;
-import nge.lk.mods.commonlib.gui.factory.element.TextElement;
+import nge.lk.mods.commonlib.gui.designer.GuiDesigner;
+import nge.lk.mods.commonlib.gui.designer.RenderProperties;
+import nge.lk.mods.commonlib.gui.designer.element.Box;
+import nge.lk.mods.commonlib.gui.designer.element.Button;
+import nge.lk.mods.commonlib.gui.designer.element.Label;
+import nge.lk.mods.commonlib.gui.designer.element.TextField;
+import nge.lk.mods.commonlib.gui.designer.util.Alignment;
+import nge.lk.mods.commonlib.gui.designer.util.Padding;
 
 import java.util.Random;
 import java.util.function.Consumer;
@@ -18,7 +21,7 @@ import java.util.function.Consumer;
 /**
  * The GUI used for editing waypoints.
  */
-public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consumer<ButtonElement> {
+public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Consumer<Button> {
 
     /**
      * A random number generator.
@@ -43,17 +46,17 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
     /**
      * The input element containing the waypoint name.
      */
-    private InputElement nameElement;
+    private TextField nameElement;
 
     /**
      * The input elements containing the coordinates.
      */
-    private final InputElement[] coordinateElements = new InputElement[3];
+    private final TextField[] coordinateElements = new TextField[3];
 
     /**
      * The button for changing the color.
      */
-    private ButtonElement colorButton;
+    private Button colorButton;
 
     /**
      * The currently selected color.
@@ -63,17 +66,17 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
     /**
      * The button for saving and going to the parent menu.
      */
-    private ButtonElement saveButton;
+    private Button saveButton;
 
     /**
      * The button for saving and closing all GUIs.
      */
-    private ButtonElement saveCloseButton;
+    private Button saveCloseButton;
 
     /**
      * The button for going back to the parent menu.
      */
-    private ButtonElement backButton;
+    private Button backButton;
 
     /**
      * Constructor.
@@ -92,14 +95,12 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
     }
 
     @Override
-    public void accept(final ButtonElement buttonElement) {
+    public void accept(final Button buttonElement) {
         if (buttonElement == colorButton) {
-            mc.displayGuiScreen(new GuiColorPicker(selectedColor, this));
+            mc.displayGuiScreen(new ColorPickerGui(selectedColor, this));
         } else if (buttonElement == backButton) {
             mc.displayGuiScreen(parent);
-        }
-
-        if (buttonElement == saveButton || buttonElement == saveCloseButton) {
+        } else if (buttonElement == saveButton || buttonElement == saveCloseButton) {
             final boolean close = buttonElement == saveCloseButton;
 
             final int[] coords = new int[3];
@@ -157,20 +158,33 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
 
     @Override
     protected void createGui() {
-        setPadding(0.05, 0.05, 0.1, 0.05);
-        addText(new Positioning().center()).setText("Waypoint Manager > "
-                + (isNewWaypoint() ? "Create" : "Edit"), 0xAAAAAA);
-        addBlank(new Positioning().breakRow().absoluteHeight(15));
+        final Box contentPane = new Box(RenderProperties.builder().fullSize().build(),
+                Padding.relative(5, 5, 10, 5));
 
-        addText(new Positioning().breakRow()).setText("Waypoint Name", 0xAAAAAA);
-        nameElement = addInput(new Positioning().relativeWidth(85).absoluteHeight(20).breakRow());
+        final Label headerLabel = new Label(RenderProperties.builder().centered().groupBreaking().build());
+        headerLabel.setText("Waypoint Manager > " + (isNewWaypoint() ? "Create" : "Edit"), 0xAAAAAA);
+        headerLabel.pack();
+        contentPane.addToActive(headerLabel);
+        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
+
+        final Label waypointNameLabel = new Label(RenderProperties.builder().groupBreaking().build());
+        waypointNameLabel.setText("Waypoint Name", 0xAAAAAA);
+        waypointNameLabel.pack();
+        contentPane.addToActive(waypointNameLabel);
+
+        nameElement = new TextField(RenderProperties.builder().relativeWidth(100).absoluteHeight(20).groupBreaking()
+                .build());
         nameElement.getTextField().setMaxStringLength(30);
         nameElement.getTextField().setText(isNewWaypoint() ? "" : editWaypoint.getName());
         nameElement.getTextField().setCursorPositionZero();
-        addBlank(new Positioning().breakRow().absoluteHeight(15));
+        contentPane.addToActive(nameElement);
+        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
 
-        addText(new Positioning().breakRow()).setText("Waypoint Coordinates", 0xAAAAAA);
-        addBlank(new Positioning().breakRow().absoluteHeight(3));
+        final Label waypointCoordsLabel = new Label(RenderProperties.builder().groupBreaking().build());
+        waypointCoordsLabel.setText("Waypoint Coordinates", 0xAAAAAA);
+        waypointCoordsLabel.pack();
+        contentPane.addToActive(waypointCoordsLabel);
+        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(3).build()));
 
         final String[] captions = {"X:", "Y:", "Z:"};
         final int[] coords = new int[3];
@@ -185,41 +199,69 @@ public class WaypointEditorGui extends GuiFactory implements ColorPicking, Consu
             coords[2] = (int) Math.floor(mc.player.posZ);
         }
         for (int i = 0; i < 3; i++) {
-            addText(new Positioning()).setText(captions[i], 0xAAAAAA);
-            coordinateElements[i] = addInput(new Positioning().absoluteWidth(70).absoluteHeight(20));
+            final Box labelBox = new Box(RenderProperties.builder().relativeWidth(7).absoluteHeight(20).build());
+            final Label coordLabel = new Label(RenderProperties.builder().secondaryAlignment(Alignment.RIGHT).build());
+            coordLabel.setText(captions[i], 0xAAAAAA);
+            coordLabel.pack();
+            labelBox.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(3).build()));
+            labelBox.addToActive(new Box(RenderProperties.builder().absoluteWidth(3).secondaryAlignment(Alignment.RIGHT)
+                    .build()));
+            labelBox.addToActive(coordLabel);
+            labelBox.commitBucket(Alignment.TOP);
+            contentPane.addToActive(labelBox);
+
+            coordinateElements[i] = new TextField(RenderProperties.builder().relativeWidth(18).absoluteHeight(20)
+                    .build());
             coordinateElements[i].getTextField().setMaxStringLength(16);
             coordinateElements[i].getTextField().setText(String.valueOf(coords[i]));
             coordinateElements[i].getTextField().setCursorPositionZero();
-            addBlank(new Positioning().relativeWidth(3));
+            contentPane.addToActive(coordinateElements[i]);
         }
 
-        colorButton = addButton(this, new Positioning().absoluteWidth(50).absoluteHeight(20));
+        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(7).build()));
+        colorButton = new Button(this, RenderProperties.builder().relativeWidth(18).absoluteHeight(20)
+                .build());
         colorButton.getButton().displayString = "Color";
         colorButton.getButton().packedFGColour = selectedColor;
-        addBlank(new Positioning().absoluteHeight(20).breakRow());
+        contentPane.addToActive(colorButton);
+        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(20).build()));
 
         if (isNewWaypoint()) {
-            addBlank(new Positioning().breakRow().absoluteHeight(15));
-            addText(new Positioning().breakRow()).setText("Tip: In a hurry? You can use ??? to",
-                    0xAAAAAA);
-            addText(new Positioning()).setText("quickly create an anonymous waypoint", 0xAAAAAA);
+            contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
+
+            final Label tip1 = new Label(RenderProperties.builder().groupBreaking().build());
+            tip1.setText("Tip: In a hurry? You can use ??? to", 0xAAAAAA);
+            tip1.pack();
+            contentPane.addToActive(tip1);
+
+            final Label tip2 = new Label(RenderProperties.builder().groupBreaking().build());
+            tip2.setText("quickly create an anonymous waypoint", 0xAAAAAA);
+            tip2.pack();
+            contentPane.addToActive(tip2);
         }
+        contentPane.commitBucket(Alignment.TOP);
 
-        addBlank(new Positioning().alignBottom().breakRow().relativeHeight(4));
-
-        saveButton = addButton(this, new Positioning().alignBottom().relativeWidth(27).absoluteHeight(20));
+        saveButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
+                .build());
         saveButton.getButton().displayString = "Save & Back";
         saveButton.getButton().enabled = false;
-        addBlank(new Positioning().alignBottom().relativeWidth(3));
+        contentPane.addToActive(saveButton);
+        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(5).build()));
 
-        saveCloseButton = addButton(this,
-                new Positioning().alignBottom().relativeWidth(27).absoluteHeight(20));
+        saveCloseButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
+                .build());
         saveCloseButton.getButton().displayString = "Save & Close";
         saveCloseButton.getButton().enabled = false;
-        addBlank(new Positioning().alignBottom().relativeWidth(3));
+        contentPane.addToActive(saveCloseButton);
+        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(5).build()));
 
-        backButton = addButton(this, new Positioning().alignBottom().relativeWidth(27).absoluteHeight(20));
+        backButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
+                .build());
         backButton.getButton().displayString = "Back";
+        contentPane.addToActive(backButton);
+
+        contentPane.commitBucket(Alignment.BOTTOM);
+        root.addRenderBucket(Alignment.TOP, contentPane);
     }
 
     /**
