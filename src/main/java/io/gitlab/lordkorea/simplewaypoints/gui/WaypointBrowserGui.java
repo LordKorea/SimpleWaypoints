@@ -55,14 +55,11 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
 
     @Override
     protected void createGui() {
-        final Box contentPane = new Box(RenderProperties.builder().fullSize().build(),
+        final Box contentPane = new Box(RenderProperties.fullSize(),
                 Padding.relative(5, 5, 10, 5));
 
-        final Label header = new Label(RenderProperties.builder().centered().groupBreaking().build());
-        header.setText("Waypoint Browser", 0xAAAAAA);
-        header.pack();
-        contentPane.addToActive(header);
-        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().relativeHeight(7).build()));
+        contentPane.addToActive(Label.centered("Waypoint Browser", 0xAAAAAA));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         int i = 0;
         for (final Waypoint waypoint : manager.getWaypoints()) {
@@ -78,7 +75,7 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
             contentPane.addToActive(button);
 
             if (i % 2 != 0) {
-                contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().relativeHeight(5).build()));
+                contentPane.addToActive(Box.relativeVerticalSpacer(5));
             }
             i++;
 
@@ -86,8 +83,8 @@ public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> 
         }
         contentPane.commitBucket(Alignment.TOP);
 
-        final Button closeButton = new Button(b -> closeGui(), RenderProperties.builder().relativeWidth(30)
-                .absoluteHeight(20).centered().build());
+        final Button closeButton = new Button(b -> closeGui(),
+                Button.relativeProperties(30, true, true));
         closeButton.getButton().displayString = "Back";
         contentPane.addRenderBucket(Alignment.BOTTOM, closeButton);
 

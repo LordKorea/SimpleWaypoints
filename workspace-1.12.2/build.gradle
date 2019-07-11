@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    compile 'nge.lk.mods.commonlib:commonlib:1.1.0-1.12.2.2838'
+    compile 'nge.lk.mods.commonlib:commonlib:1.1.1-1.12.2.2838'
 }
 
 task copyDependencyResources(type: Copy) {
@@ -76,7 +76,7 @@ tasks.build.dependsOn reobfShadowJar
 shadowJar {
     classifier = null
     dependencies {
-        include(dependency('nge.lk.mods.commonlib:commonlib:1.1.0-1.12.2.2838'))
+        include(dependency('nge.lk.mods.commonlib:commonlib:1.1.1-1.12.2.2838'))
     }
     exclude 'dummyThing'
     relocate 'nge.lk.mods.commonlib', 'nge.lk.mods.simplewaypoints.common'

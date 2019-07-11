@@ -158,34 +158,22 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
 
     @Override
     protected void createGui() {
-        final Box contentPane = new Box(RenderProperties.builder().fullSize().build(),
+        final Box contentPane = new Box(RenderProperties.fullSize(),
                 Padding.relative(5, 5, 10, 5));
 
-        final Label headerLabel = new Label(RenderProperties.builder().centered().groupBreaking().build());
-        headerLabel.setText("Waypoint Manager > " + (isNewWaypoint() ? "Create" : "Edit"), 0xAAAAAA);
-        headerLabel.pack();
-        contentPane.addToActive(headerLabel);
-        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
+        final String caption = "Waypoint Manager > " + (isNewWaypoint() ? "Create" : "Edit");
+        contentPane.addToActive(Label.centered(caption, 0xAAAAAA));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
-        final Label waypointNameLabel = new Label(RenderProperties.builder().groupBreaking().build());
-        waypointNameLabel.setText("Waypoint Name", 0xAAAAAA);
-        waypointNameLabel.pack();
-        contentPane.addToActive(waypointNameLabel);
-
-        nameElement = new TextField(RenderProperties.builder().relativeWidth(100).absoluteHeight(20).groupBreaking()
-                .build());
+        contentPane.addToActive(Label.regular("Waypoint Name", 0xAAAAAA, true));
+        nameElement = new TextField(TextField.relativeProperties(100, true));
         nameElement.getTextField().setMaxStringLength(30);
         nameElement.getTextField().setText(isNewWaypoint() ? "" : editWaypoint.getName());
         nameElement.getTextField().setCursorPositionZero();
         contentPane.addToActive(nameElement);
-        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
-        final Label waypointCoordsLabel = new Label(RenderProperties.builder().groupBreaking().build());
-        waypointCoordsLabel.setText("Waypoint Coordinates", 0xAAAAAA);
-        waypointCoordsLabel.pack();
-        contentPane.addToActive(waypointCoordsLabel);
-        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(3).build()));
-
+        contentPane.addToActive(Label.regular("Waypoint Coordinates", 0xAAAAAA, true));
         final String[] captions = {"X:", "Y:", "Z:"};
         final int[] coords = new int[3];
         if (!isNewWaypoint()) {
@@ -200,63 +188,47 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         }
         for (int i = 0; i < 3; i++) {
             final Box labelBox = new Box(RenderProperties.builder().relativeWidth(7).absoluteHeight(20).build());
-            final Label coordLabel = new Label(RenderProperties.builder().secondaryAlignment(Alignment.RIGHT).build());
-            coordLabel.setText(captions[i], 0xAAAAAA);
-            coordLabel.pack();
-            labelBox.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(3).build()));
-            labelBox.addToActive(new Box(RenderProperties.builder().absoluteWidth(3).secondaryAlignment(Alignment.RIGHT)
-                    .build()));
-            labelBox.addToActive(coordLabel);
+            labelBox.addToActive(Box.absoluteVerticalSpacer(3));
+            labelBox.addToActive(Box.absoluteHorizontalPlaceholder(3, Alignment.RIGHT));
+            labelBox.addToActive(Label.regular(captions[i], 0xAAAAAA, false, Alignment.RIGHT));
             labelBox.commitBucket(Alignment.TOP);
             contentPane.addToActive(labelBox);
 
-            coordinateElements[i] = new TextField(RenderProperties.builder().relativeWidth(18).absoluteHeight(20)
-                    .build());
+            coordinateElements[i] = new TextField(TextField.relativeProperties(18));
             coordinateElements[i].getTextField().setMaxStringLength(16);
             coordinateElements[i].getTextField().setText(String.valueOf(coords[i]));
             coordinateElements[i].getTextField().setCursorPositionZero();
             contentPane.addToActive(coordinateElements[i]);
         }
 
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(7).build()));
-        colorButton = new Button(this, RenderProperties.builder().relativeWidth(18).absoluteHeight(20)
-                .build());
+        contentPane.addToActive(Box.relativeHorizontalPlaceholder(7));
+        colorButton = new Button(this, Button.relativeProperties(18, true));
         colorButton.getButton().displayString = "Color";
         colorButton.getButton().packedFGColour = selectedColor;
         contentPane.addToActive(colorButton);
-        contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(20).build()));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         if (isNewWaypoint()) {
-            contentPane.addToActive(new Box(RenderProperties.builder().groupBreaking().absoluteHeight(15).build()));
-
-            final Label tip1 = new Label(RenderProperties.builder().groupBreaking().build());
-            tip1.setText("Tip: In a hurry? You can use ??? to", 0xAAAAAA);
-            tip1.pack();
-            contentPane.addToActive(tip1);
-
-            final Label tip2 = new Label(RenderProperties.builder().groupBreaking().build());
-            tip2.setText("quickly create an anonymous waypoint", 0xAAAAAA);
-            tip2.pack();
-            contentPane.addToActive(tip2);
+            contentPane.addToActive(Label.regular("Tip: In a hurry? You can use ??? to",
+                    0xAAAAAA, true));
+            contentPane.addToActive(Label.regular("quickly create an anonymous waypoint",
+                    0xAAAAAA, true));
         }
         contentPane.commitBucket(Alignment.TOP);
 
-        saveButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
-                .build());
+        saveButton = new Button(this, Button.relativeProperties(30));
         saveButton.getButton().displayString = "Save & Back";
         saveButton.getButton().enabled = false;
         contentPane.addToActive(saveButton);
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(5).build()));
+        contentPane.addToActive(Box.relativeHorizontalPlaceholder(5));
 
-        saveCloseButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
-                .build());
+        saveCloseButton = new Button(this, Button.relativeProperties(30));
         saveCloseButton.getButton().displayString = "Save & Close";
         saveCloseButton.getButton().enabled = false;
         contentPane.addToActive(saveCloseButton);
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeWidth(5).build()));
+        contentPane.addToActive(Box.relativeHorizontalPlaceholder(5));
 
-        backButton = new Button(this, RenderProperties.builder().relativeWidth(30).absoluteHeight(20)
-                .build());
+        backButton = new Button(this, Button.relativeProperties(30));
         backButton.getButton().displayString = "Back";
         contentPane.addToActive(backButton);
 

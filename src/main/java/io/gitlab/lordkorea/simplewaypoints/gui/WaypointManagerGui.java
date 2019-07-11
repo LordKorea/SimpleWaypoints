@@ -8,9 +8,6 @@ import nge.lk.mods.commonlib.gui.designer.element.Button;
 import nge.lk.mods.commonlib.gui.designer.element.Label;
 import nge.lk.mods.commonlib.gui.designer.util.Alignment;
 import nge.lk.mods.commonlib.gui.designer.util.Padding;
-import nge.lk.mods.commonlib.gui.factory.GuiFactory;
-import nge.lk.mods.commonlib.gui.factory.Positioning;
-import nge.lk.mods.commonlib.gui.factory.element.ButtonElement;
 
 import java.util.function.Consumer;
 
@@ -58,35 +55,32 @@ public class WaypointManagerGui extends GuiDesigner implements Consumer<Button> 
 
     @Override
     protected void createGui() {
-        final Box contentPane = new Box(RenderProperties.builder().fullSize().build(),
+        final Box contentPane = new Box(RenderProperties.fullSize(),
                 Padding.relative(5, 5, 10, 5));
 
-        final Label headerLabel = new Label(RenderProperties.builder().centered().groupBreaking().build());
-        headerLabel.setText("Waypoint Manager", 0xAAAAAA);
-        headerLabel.pack();
-        contentPane.addToActive(headerLabel);
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeHeight(7).groupBreaking().build()));
+        contentPane.addToActive(Label.centered("Waypoint Manager", 0xAAAAAA));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
-        createWaypointButton = new Button(this, RenderProperties.builder().centered().absoluteHeight(20)
-                .relativeWidth(35).groupBreaking().build());
+        createWaypointButton = new Button(this,
+                Button.relativeProperties(35, true, true));
         createWaypointButton.getButton().displayString = "Create Waypoint";
         contentPane.addToActive(createWaypointButton);
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeHeight(7).groupBreaking().build()));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
-        browseWaypointsButton = new Button(this, RenderProperties.builder().centered().absoluteHeight(20)
-                .relativeWidth(35).groupBreaking().build());
+        browseWaypointsButton = new Button(this,
+                Button.relativeProperties(35, true, true));
         browseWaypointsButton.getButton().displayString = "Browse Waypoints";
         contentPane.addToActive(browseWaypointsButton);
-        contentPane.addToActive(new Box(RenderProperties.builder().relativeHeight(7).groupBreaking().build()));
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
-        deleteWaypointsButton = new Button(this, RenderProperties.builder().absoluteHeight(20)
-                .relativeWidth(35).centered().groupBreaking().build());
+        deleteWaypointsButton = new Button(this,
+                Button.relativeProperties(35, true, true));
         deleteWaypointsButton.getButton().displayString = "Delete Waypoints";
         contentPane.addToActive(deleteWaypointsButton);
         contentPane.commitBucket(Alignment.TOP);
 
-        final Button closeButton = new Button(b -> closeGui(), RenderProperties.builder().centered().absoluteHeight(20)
-                .relativeWidth(30).build());
+        final Button closeButton = new Button(b -> closeGui(),
+                Button.relativeProperties(30, true, true));
         closeButton.getButton().displayString = "Close";
         contentPane.addRenderBucket(Alignment.BOTTOM, closeButton);
 
