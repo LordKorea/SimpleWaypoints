@@ -1,6 +1,5 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
-import io.gitlab.lordkorea.simplewaypoints.gui.WaypointEditorGui;
 import io.gitlab.lordkorea.simplewaypoints.gui.WaypointManagerGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
