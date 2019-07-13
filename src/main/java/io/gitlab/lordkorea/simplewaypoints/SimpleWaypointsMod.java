@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import nge.lk.mods.commonlib.util.DebugUtil;
 import org.lwjgl.input.Keyboard;
 
@@ -125,7 +125,7 @@ public final class SimpleWaypointsMod {
     }
 
     @SubscribeEvent
-    public void onKeyPress(final InputEvent.KeyInputEvent event) {
+    public void onKeyPress(final KeyInputEvent event) {
         final Minecraft mc = Minecraft.getMinecraft();
 
         if (managerKey.isPressed()) {
@@ -134,17 +134,16 @@ public final class SimpleWaypointsMod {
 
         if (quickWaypointKey.isPressed()) {
             final Waypoint quickPoint = new Waypoint("[+]", waypointManager.getActiveGroup(),
-                    (int) Math.floor(mc.player.posX), (int) Math.floor(mc.player.posY + mc.player.eyeHeight),
-                    (int) Math.floor(mc.player.posZ), RANDOM.nextInt(0xFFFFFF + 1));
+                    (int) Math.floor(mc.thePlayer.posX), (int) Math.floor(mc.thePlayer.posY + mc.thePlayer.eyeHeight),
+                    (int) Math.floor(mc.thePlayer.posZ), RANDOM.nextInt(0xFFFFFF + 1));
             waypointManager.addWaypoint(quickPoint);
             waypointManager.save();
         }
 
         if (cycleGroupKey.isPressed()) {
             waypointManager.cycleActiveGroup();
-            Minecraft.getMinecraft().player.sendStatusMessage(
-                    new TextComponentString(String.format("Waypoint Group: %s", waypointManager.getActiveGroup())),
-                    true);
+            Minecraft.getMinecraft().thePlayer.addChatMessage(
+                    new TextComponentString(String.format("Waypoint Group: %s", waypointManager.getActiveGroup())));
         }
     }
 }

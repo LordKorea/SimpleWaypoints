@@ -189,7 +189,7 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         contentPane.addToActive(Label.regular("Waypoint Coordinates", 0xAAAAAA, true));
-        final String[] captions = {"X:", "Y:", "Z:"};
+        final String[] captions = new String[]{"X:", "Y:", "Z:"};
         final int[] coords = new int[3];
         if (!isNewWaypoint()) {
             coords[0] = editWaypoint.getX();
@@ -197,9 +197,9 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
             coords[2] = editWaypoint.getZ();
         } else {
             final Minecraft mc = Minecraft.getMinecraft();
-            coords[0] = (int) Math.floor(mc.player.posX);
-            coords[1] = (int) Math.floor(mc.player.posY + mc.player.eyeHeight);
-            coords[2] = (int) Math.floor(mc.player.posZ);
+            coords[0] = (int) Math.floor(mc.thePlayer.posX);
+            coords[1] = (int) Math.floor(mc.thePlayer.posY + mc.thePlayer.eyeHeight);
+            coords[2] = (int) Math.floor(mc.thePlayer.posZ);
         }
         for (int i = 0; i < 3; i++) {
             final Box labelBox = new Box(RenderProperties.builder().relativeWidth(7).absoluteHeight(20).build());

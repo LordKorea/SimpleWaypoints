@@ -2,9 +2,11 @@ package io.gitlab.lordkorea.simplewaypoints;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.DestFactor;
+import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -36,7 +38,7 @@ public class WaypointRenderer {
      * @param cameraPos The camera position to render from.
      */
     public void render(final Waypoint waypoint, final Vec3d cameraPos, final Vec2f cameraRotation) {
-        final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
+        final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
         final Vec3d waypointPos = new Vec3d(waypoint.getX() + 0.5, waypoint.getY() + 0.5,
                 waypoint.getZ() + 0.5);
 
@@ -57,7 +59,7 @@ public class WaypointRenderer {
                 .scale(Math.min(FADE_DISTANCE, distance));
 
         // Translate to waypoint position. The 1.5f is magic, I'm unsure where it is coming from.
-        GlStateManager.translate(eyeToWaypoint.x, eyeToWaypoint.y + 1.5f, eyeToWaypoint.z);
+        GlStateManager.translate(eyeToWaypoint.xCoord, eyeToWaypoint.yCoord + 1.5f, eyeToWaypoint.zCoord);
 
         // Align to camera.
         GlStateManager.rotate(-cameraRotation.x, 0.0f, 1.0f, 0.0f);
@@ -73,18 +75,18 @@ public class WaypointRenderer {
         final int waypointColor = waypoint.getColorRGB();
         GlStateManager.color(((waypointColor >> 16) & 0xFF) / 255.0f,
                 ((waypointColor >> 8) & 0xFF) / 255.0f, (waypointColor & 0xFF) / 255.0f);
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.CONSTANT_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_CONSTANT_ALPHA);
+        GlStateManager.blendFunc(SourceFactor.CONSTANT_ALPHA, DestFactor.ONE_MINUS_CONSTANT_ALPHA);
 
         // Setup first pass: 50% opacity.
-        final float distanceFactor = MathHelper.clamp(distance - FADE_DISTANCE, 0.0f, 64.0f) / 64.0f;
+        final float distanceFactor =
+                MathHelper.clamp_float(distance - FADE_DISTANCE, 0.0f, 64.0f) / 64.0f;
         final float finalAlpha = 1.0f - distanceFactor * 0.5f;
         GL14.glBlendColor(1.0f, 1.0f, 1.0f, 0.5f);
         for (int i = 0; i < 2; i++) {
             // Need to bind texture here, as font rendering overrides this before second pass.
             Minecraft.getMinecraft().getTextureManager().bindTexture(WAYPOINT_MARKER);
             final Tessellator tessellator = Tessellator.getInstance();
-            final BufferBuilder builder = tessellator.getBuffer();
+            final VertexBuffer builder = tessellator.getBuffer();
             builder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
             builder.pos(0.0 - 0.5, 0.0 - 0.5, 0.0).tex(0.0, 0.0).endVertex();
             builder.pos(1.0 - 0.5, 1.0 - 0.5, 0.0).tex(1.0, 1.0).endVertex();

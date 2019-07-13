@@ -9,4 +9,5 @@ build
 classes
 run
 
-workspace-1.12.2/src
+workspace-1.10.2/src
+workspace-1.12.2
