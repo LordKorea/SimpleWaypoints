@@ -1,0 +1,97 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    }
+}
+
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '1.6'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = "1.0.0-1.8.9.2318"
+group = "io.gitlab.lordkorea.simplewaypoints"
+archivesBaseName = "simplewaypoints"
+
+sourceCompatibility = targetCompatibility = "1.8" // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.8"
+}
+
+minecraft {
+    version = "1.8.9-11.15.1.2318-1.8.9"
+    runDir = "run"
+    mappings = "stable_20"
+
+    replace "@VERSION@", project.version
+    replace "@FINGERPRINT@", project.signSHA1
+    replaceIn "SimpleWaypointsMod.java"
+}
+
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+    compile 'nge.lk.mods.commonlib:commonlib:1.1.1-1.8.9.2318'
+    compile 'org.projectlombok:lombok:1.18.8'
+}
+
+task copyDependencyResources(type: Copy) {
+    configurations.compile.files.collect {
+        from zipTree(it).matching {
+            include "assets/**"
+        }
+    }
+    into "$buildDir/resources/main"
+}
+tasks.processResources.dependsOn copyDependencyResources
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+
+    // copy everything else except the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+reobf {
+    shadowJar { mappingType = 'SEARGE' }
+}
+tasks.build.dependsOn reobfShadowJar
+
+shadowJar {
+    classifier = null
+    dependencies {
+        include(dependency('nge.lk.mods.commonlib:commonlib:1.1.1-1.8.9.2318'))
+    }
+    exclude 'dummyThing'
+    relocate 'nge.lk.mods.commonlib', 'nge.lk.mods.simplewaypoints.common'
+}
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    keyStore = project.keyStore
+    alias = project.keyStoreAlias
+    storePass = project.keyStorePass
+    keyPass = project.keyStoreKeyPass
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+tasks.build.dependsOn signJar

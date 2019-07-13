@@ -3,17 +3,15 @@ package io.gitlab.lordkorea.simplewaypoints;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Vec3;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
+import org.lwjgl.util.vector.Vector2f;
 
 /**
  * Used for rendering waypoints in the world.
@@ -37,9 +35,9 @@ public class WaypointRenderer {
      * @param waypoint  The waypoint to render.
      * @param cameraPos The camera position to render from.
      */
-    public void render(final Waypoint waypoint, final Vec3d cameraPos, final Vec2f cameraRotation) {
+    public void render(final Waypoint waypoint, final Vec3 cameraPos, final Vector2f cameraRotation) {
         final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-        final Vec3d waypointPos = new Vec3d(waypoint.getX() + 0.5, waypoint.getY() + 0.5,
+        final Vec3 waypointPos = new Vec3(waypoint.getX() + 0.5, waypoint.getY() + 0.5,
                 waypoint.getZ() + 0.5);
 
         // Setup GL state.
@@ -55,8 +53,10 @@ public class WaypointRenderer {
         final String waypointText = waypoint.getName() + String.format(" (%dm)", (int) distance);
 
         // Determine the eye-to-waypoint vector.
-        final Vec3d eyeToWaypoint = waypointPos.subtract(cameraPos).normalize()
-                .scale(Math.min(FADE_DISTANCE, distance));
+        final float scaleFactor = Math.min(FADE_DISTANCE, distance);
+        final Vec3 eyeToWaypointUnscaled = waypointPos.subtract(cameraPos).normalize();
+        final Vec3 eyeToWaypoint = new Vec3(eyeToWaypointUnscaled.xCoord * scaleFactor,
+                eyeToWaypointUnscaled.yCoord * scaleFactor, eyeToWaypointUnscaled.zCoord * scaleFactor);
 
         // Translate to waypoint position. The 1.5f is magic, I'm unsure where it is coming from.
         GlStateManager.translate(eyeToWaypoint.xCoord, eyeToWaypoint.yCoord + 1.5f, eyeToWaypoint.zCoord);
@@ -75,7 +75,7 @@ public class WaypointRenderer {
         final int waypointColor = waypoint.getColorRGB();
         GlStateManager.color(((waypointColor >> 16) & 0xFF) / 255.0f,
                 ((waypointColor >> 8) & 0xFF) / 255.0f, (waypointColor & 0xFF) / 255.0f);
-        GlStateManager.blendFunc(SourceFactor.CONSTANT_ALPHA, DestFactor.ONE_MINUS_CONSTANT_ALPHA);
+        GlStateManager.blendFunc(GL11.GL_CONSTANT_ALPHA, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
 
         // Setup first pass: 50% opacity.
         final float distanceFactor =
@@ -86,7 +86,7 @@ public class WaypointRenderer {
             // Need to bind texture here, as font rendering overrides this before second pass.
             Minecraft.getMinecraft().getTextureManager().bindTexture(WAYPOINT_MARKER);
             final Tessellator tessellator = Tessellator.getInstance();
-            final VertexBuffer builder = tessellator.getBuffer();
+            final WorldRenderer builder = tessellator.getWorldRenderer();
             builder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
             builder.pos(0.0 - 0.5, 0.0 - 0.5, 0.0).tex(0.0, 0.0).endVertex();
             builder.pos(1.0 - 0.5, 1.0 - 0.5, 0.0).tex(1.0, 1.0).endVertex();

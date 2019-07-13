@@ -14,6 +14,7 @@ import nge.lk.mods.commonlib.gui.designer.element.Label;
 import nge.lk.mods.commonlib.gui.designer.element.TextField;
 import nge.lk.mods.commonlib.gui.designer.util.Alignment;
 import nge.lk.mods.commonlib.gui.designer.util.Padding;
+import org.lwjgl.input.Keyboard;
 
 import java.util.Random;
 import java.util.function.Consumer;
@@ -232,7 +233,7 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
         if (isNewWaypoint()) {
-            final String quickWaypointText = manager.getQuickWaypointKey().getDisplayName();
+            final String quickWaypointText = Keyboard.getKeyName(manager.getQuickWaypointKey().getKeyCode());
             contentPane.addToActive(
                     Label.regular(String.format("Tip: In a hurry? You can use %s to", quickWaypointText),
                             0xAAAAAA, true));
