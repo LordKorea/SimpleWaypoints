@@ -1,12 +1,17 @@
 package io.gitlab.lordkorea.simplewaypoints;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.settings.KeyBinding;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Keeps track of and manages waypoints.
@@ -14,9 +19,9 @@ import java.util.LinkedHashSet;
 public class WaypointManager {
 
     /**
-     * The collection in which all waypoints that are registered are stored.
+     * The map in which all waypoints that are registered are stored. The key is the waypoint group.
      */
-    private final Collection<Waypoint> waypoints = new LinkedHashSet<>();
+    private final Map<String, Set<Waypoint>> waypoints = new LinkedHashMap<>();
 
     /**
      * The waypoint IO which is used for storing and loading waypoints.
@@ -27,6 +32,11 @@ public class WaypointManager {
      * The quick waypoint key binding.
      */
     private @Getter final KeyBinding quickWaypointKey;
+
+    /**
+     * The currently selected waypoint group.
+     */
+    private @Getter @Setter String activeGroup;
 
     /**
      * Whether waypoints have changed and need to be saved.
@@ -41,7 +51,15 @@ public class WaypointManager {
     public WaypointManager(final File storageFile, final KeyBinding quickWaypointKey) {
         waypointIO = new WaypointIO(storageFile);
         this.quickWaypointKey = quickWaypointKey;
-        waypoints.addAll(waypointIO.loadWaypoints());
+        for (final Waypoint waypoint : waypointIO.loadWaypoints()) {
+            waypoints.computeIfAbsent(waypoint.getGroup(), g -> new LinkedHashSet<>()).add(waypoint);
+        }
+
+        if (!waypoints.isEmpty()) {
+            activeGroup = waypoints.keySet().stream().findFirst().get();
+        } else {
+            activeGroup = "general";
+        }
     }
 
     /**
@@ -50,7 +68,9 @@ public class WaypointManager {
     public void save() {
         if (dirty) {
             dirty = false;
-            waypointIO.saveWaypoints(waypoints);
+            waypointIO.saveWaypoints(waypoints.values().stream()
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList()));
         }
     }
 
@@ -60,7 +80,8 @@ public class WaypointManager {
      * @param waypoint The waypoint.
      */
     public void addWaypoint(final Waypoint waypoint) {
-        dirty = waypoints.add(waypoint) || dirty;
+        final Set<Waypoint> group = waypoints.computeIfAbsent(waypoint.getGroup(), g -> new LinkedHashSet<>());
+        dirty = group.add(waypoint) || dirty;
     }
 
     /**
@@ -69,7 +90,16 @@ public class WaypointManager {
      * @param waypoint The waypoint.
      */
     public void removeWaypoint(final Waypoint waypoint) {
-        dirty = waypoints.remove(waypoint) || dirty;
+        final Set<Waypoint> group = waypoints.get(waypoint.getGroup());
+        if (group == null) {
+            return;
+        }
+
+        dirty = group.remove(waypoint) || dirty;
+
+        if (group.isEmpty()) {
+            waypoints.remove(waypoint.getGroup());
+        }
     }
 
     /**
@@ -77,7 +107,49 @@ public class WaypointManager {
      *
      * @return The waypoints.
      */
-    public Collection<Waypoint> getWaypoints() {
-        return Collections.unmodifiableCollection(waypoints);
+    public Collection<Waypoint> getWaypoints(final String group) {
+        return Collections.unmodifiableCollection(waypoints.getOrDefault(group, Collections.emptySet()));
+    }
+
+    /**
+     * Obtains the waypoints that are in the currently active group.
+     *
+     * @return The active waypoints.
+     */
+    public Collection<Waypoint> getActiveWaypoints() {
+        return getWaypoints(activeGroup);
+    }
+
+    /**
+     * Cycles the active waypoint group.
+     */
+    public void cycleActiveGroup() {
+        String firstGroup = null;
+        boolean next = false;
+        for (final String group : waypoints.keySet()) {
+            if (firstGroup == null) {
+                firstGroup = group;
+            }
+
+            if (next) {
+                activeGroup = group;
+                return;
+            }
+
+            if (group.equals(activeGroup)) {
+                next = true;
+            }
+        }
+
+        activeGroup = firstGroup;
+    }
+
+    /**
+     * Returns the known waypoint groups.
+     *
+     * @return The groups.
+     */
+    public Collection<String> getGroups() {
+        return waypoints.keySet();
     }
 }

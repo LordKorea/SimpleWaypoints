@@ -2,127 +2,68 @@ package io.gitlab.lordkorea.simplewaypoints.gui;
 
 import io.gitlab.lordkorea.simplewaypoints.Waypoint;
 import io.gitlab.lordkorea.simplewaypoints.WaypointManager;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import nge.lk.mods.commonlib.gui.designer.GuiDesigner;
-import nge.lk.mods.commonlib.gui.designer.RenderProperties;
-import nge.lk.mods.commonlib.gui.designer.element.Box;
 import nge.lk.mods.commonlib.gui.designer.element.Button;
-import nge.lk.mods.commonlib.gui.designer.element.Label;
-import nge.lk.mods.commonlib.gui.designer.util.Alignment;
-import nge.lk.mods.commonlib.gui.designer.util.Padding;
 
 import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * The GUI used for managing waypoints.
+ * The GUI used for browsing waypoints.
  */
-public class WaypointBrowserGui extends GuiDesigner implements Consumer<Button> {
+public class WaypointBrowserGui extends PagedWaypointGui<Waypoint> {
 
     /**
-     * The number of entries per page.
+     * The waypoint group of this waypoint browser.
      */
-    private static final int ENTRIES_PER_PAGE = 10;
-
-    /**
-     * The parent screen.
-     */
-    private final GuiScreen parent;
-
-    /**
-     * The waypoint manager.
-     */
-    private final WaypointManager manager;
-
-    /**
-     * The page offset of this browser instance.
-     */
-    private final int pageOffset;
+    private final String group;
 
     /**
      * Constructor.
+     *
+     * @param parent     The parent GUI.
+     * @param manager    The waypoint manager.
+     * @param pageOffset The page offset of the GUI.
+     * @param group      The waypoint group.
      */
-    public WaypointBrowserGui(final GuiScreen parent, final WaypointManager manager, final int pageOffset) {
-        this.parent = parent;
-        this.manager = manager;
-        this.pageOffset = pageOffset;
+    private WaypointBrowserGui(final Supplier<GuiScreen> parent, final WaypointManager manager, final int pageOffset,
+                               final String group) {
+        super("Waypoint Browser", manager, parent, pageOffset);
+        this.group = group;
         createGui();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param parent  The parent GUI.
+     * @param manager The waypoint manager.
+     * @param group   The waypoint group.
+     */
+    public WaypointBrowserGui(final Supplier<GuiScreen> parent, final WaypointManager manager, final String group) {
+        this(parent, manager, 0, group);
+    }
+
+    @Override
+    protected GuiScreen createPageWithOffset(final int offset) {
+        return new WaypointBrowserGui(parent, manager, offset, group);
+    }
+
+    @Override
+    protected Collection<Waypoint> getData() {
+        return manager.getWaypoints(group);
+    }
+
+    @Override
+    protected void formatButton(final Waypoint obj, final GuiButton btn) {
+        btn.displayString = obj.getShortName();
+        btn.packedFGColour = obj.getColorRGB();
     }
 
     @Override
     public void accept(final Button buttonElement) {
         final Waypoint waypoint = (Waypoint) buttonElement.getMetadata();
-        mc.displayGuiScreen(new WaypointEditorGui(parent, manager, waypoint));
-    }
-
-    @Override
-    protected void closeGui() {
-        mc.displayGuiScreen(parent);
-    }
-
-    @Override
-    protected void createGui() {
-        final Box contentPane = new Box(RenderProperties.fullSize(),
-                Padding.relative(5, 5, 10, 5));
-
-        contentPane.addToActive(Label.centered("Waypoint Browser", 0xAAAAAA));
-        contentPane.addToActive(Box.relativeVerticalSpacer(7));
-
-        int i = 0;
-        int skip = pageOffset;
-        final Collection<Waypoint> waypoints = manager.getWaypoints();
-        for (final Waypoint waypoint : waypoints) {
-            if (skip-- > 0) {
-                continue;
-            }
-
-            final RenderProperties.RenderPropertiesBuilder properties = RenderProperties.builder().relativeWidth(45)
-                    .absoluteHeight(20);
-            if (i % 2 != 0) {
-                properties.secondaryAlignment(Alignment.RIGHT).groupBreaking();
-            }
-
-            final Button button = new Button(this, properties.build());
-            button.getButton().displayString = waypoint.getShortName();
-            button.getButton().packedFGColour = waypoint.getColorRGB();
-            button.setMetadata(waypoint);
-            contentPane.addToActive(button);
-
-            if (i % 2 != 0) {
-                contentPane.addToActive(Box.relativeVerticalSpacer(5));
-            }
-            i++;
-
-            if (i == ENTRIES_PER_PAGE) {
-                break;
-            }
-        }
-        contentPane.commitBucket(Alignment.TOP);
-
-        final Button closeButton = new Button(b -> closeGui(),
-                Button.relativeProperties(30, true, true));
-        closeButton.getButton().displayString = "Back";
-        contentPane.addRenderBucket(Alignment.BOTTOM, closeButton);
-
-        // Show pagination buttons.
-        if (pageOffset > 0) {
-            contentPane.addToActive(Box.relativeHorizontalPlaceholder(15));
-            final Button prevButton = new Button(b -> mc.displayGuiScreen(
-                    new WaypointBrowserGui(parent, manager, pageOffset - ENTRIES_PER_PAGE)),
-                    Button.relativeProperties(15));
-            prevButton.getButton().displayString = "<<<";
-            contentPane.addToActive(prevButton);
-        }
-        if (waypoints.size() - pageOffset > ENTRIES_PER_PAGE) {
-            contentPane.addToActive(Box.relativeHorizontalPlaceholder(15, Alignment.RIGHT));
-            final Button nextButton = new Button(b -> mc.displayGuiScreen(
-                    new WaypointBrowserGui(parent, manager, pageOffset + ENTRIES_PER_PAGE)),
-                    Button.relativeProperties(15, false, false, Alignment.RIGHT));
-            nextButton.getButton().displayString = ">>>";
-            contentPane.addToActive(nextButton);
-        }
-        contentPane.commitBucket(Alignment.BOTTOM);
-
-        root.addRenderBucket(Alignment.TOP, contentPane);
+        mc.displayGuiScreen(new WaypointEditorGui(this::recreateCurrent, manager, waypoint));
     }
 }

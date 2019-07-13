@@ -17,6 +17,7 @@ import nge.lk.mods.commonlib.gui.designer.util.Padding;
 
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * The GUI used for editing waypoints.
@@ -31,7 +32,7 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
     /**
      * The parent screen of this GUI.
      */
-    private final GuiScreen parent;
+    private final Supplier<GuiScreen> parent;
 
     /**
      * The waypoint manager.
@@ -57,6 +58,11 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
      * The button for changing the color.
      */
     private Button colorButton;
+
+    /**
+     * The text field containing the waypoint's group.
+     */
+    private TextField groupElement;
 
     /**
      * The currently selected color.
@@ -86,7 +92,8 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
     /**
      * Constructor.
      */
-    public WaypointEditorGui(final GuiScreen parent, final WaypointManager manager, final Waypoint editWaypoint) {
+    public WaypointEditorGui(final Supplier<GuiScreen> parent, final WaypointManager manager,
+                             final Waypoint editWaypoint) {
         this.parent = parent;
         this.manager = manager;
         this.editWaypoint = editWaypoint;
@@ -104,7 +111,7 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         if (buttonElement == colorButton) {
             mc.displayGuiScreen(new ColorPickerGui(selectedColor, this));
         } else if (buttonElement == backButton) {
-            mc.displayGuiScreen(parent);
+            closeGui();
         } else if (buttonElement == saveButton || buttonElement == saveCloseButton) {
             final boolean close = buttonElement == saveCloseButton;
 
@@ -113,29 +120,25 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
                 coords[i] = Integer.parseInt(coordinateElements[i].getTextField().getText());
             }
 
-            final Waypoint newWaypoint = new Waypoint(nameElement.getTextField().getText(), coords[0], coords[1],
-                    coords[2], selectedColor);
+            final Waypoint newWaypoint = new Waypoint(nameElement.getTextField().getText(),
+                    groupElement.getTextField().getText(), coords[0], coords[1], coords[2], selectedColor);
             if (!isNewWaypoint()) {
                 manager.removeWaypoint(editWaypoint);
             }
             manager.addWaypoint(newWaypoint);
             manager.save();
+            manager.setActiveGroup(newWaypoint.getGroup());
 
             if (close) {
                 mc.displayGuiScreen(null);
             } else {
-                mc.displayGuiScreen(parent);
+                closeGui();
             }
         } else if (buttonElement == deleteButton) {
             manager.removeWaypoint(editWaypoint);
             manager.save();
-            mc.displayGuiScreen(parent);
+            closeGui();
         }
-    }
-
-    @Override
-    protected void closeGui() {
-        mc.displayGuiScreen(parent);
     }
 
     @Override
@@ -144,6 +147,9 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
 
         boolean canSave = true;
         if (nameElement.getTextField().getText().isEmpty()) {
+            canSave = false;
+        }
+        if (groupElement.getTextField().getText().isEmpty()) {
             canSave = false;
         }
 
@@ -217,6 +223,14 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         contentPane.addToActive(colorButton);
         contentPane.addToActive(Box.relativeVerticalSpacer(7));
 
+        contentPane.addToActive(Label.regular("Waypoint Group", 0xAAAAAA, true));
+        groupElement = new TextField(TextField.relativeProperties(100, true));
+        groupElement.getTextField().setMaxStringLength(16);
+        groupElement.getTextField().setText(isNewWaypoint() ? manager.getActiveGroup() : editWaypoint.getGroup());
+        groupElement.getTextField().setCursorPositionZero();
+        contentPane.addToActive(groupElement);
+        contentPane.addToActive(Box.relativeVerticalSpacer(7));
+
         if (isNewWaypoint()) {
             final String quickWaypointText = manager.getQuickWaypointKey().getDisplayName();
             contentPane.addToActive(
@@ -254,6 +268,11 @@ public class WaypointEditorGui extends GuiDesigner implements ColorPicking, Cons
         }
 
         root.addRenderBucket(Alignment.TOP, contentPane);
+    }
+
+    @Override
+    protected void closeGui() {
+        mc.displayGuiScreen(parent.get());
     }
 
     /**

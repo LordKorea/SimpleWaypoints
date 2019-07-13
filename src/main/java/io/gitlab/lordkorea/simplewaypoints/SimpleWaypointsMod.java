@@ -6,6 +6,7 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -79,6 +80,11 @@ public final class SimpleWaypointsMod {
      */
     private KeyBinding quickWaypointKey;
 
+    /**
+     * The key binding used for cycling the active waypoint group.
+     */
+    private KeyBinding cycleGroupKey;
+
     @Mod.EventHandler
     public void onPreInit(final FMLPreInitializationEvent event) {
         DebugUtil.initializeLogger(MODID);
@@ -91,8 +97,11 @@ public final class SimpleWaypointsMod {
                 "Simple Waypoints");
         quickWaypointKey = new KeyBinding("Quick Waypoint", KeyConflictContext.IN_GAME, KeyModifier.CONTROL,
                 Keyboard.KEY_RETURN, "Simple Waypoints");
+        cycleGroupKey = new KeyBinding("Cycle Waypoint Group", KeyConflictContext.IN_GAME,
+                Keyboard.KEY_RBRACKET, "Simple Waypoints");
         ClientRegistry.registerKeyBinding(managerKey);
         ClientRegistry.registerKeyBinding(quickWaypointKey);
+        ClientRegistry.registerKeyBinding(cycleGroupKey);
 
         waypointManager = new WaypointManager(storageFile, quickWaypointKey);
         waypointRenderer = new WaypointRenderer();
@@ -110,7 +119,7 @@ public final class SimpleWaypointsMod {
         final Vec3d cameraPos = viewer.getPositionEyes(event.getPartialTicks());
         final Vec2f cameraRotation = new Vec2f(viewer.rotationYaw, viewer.rotationPitch);
 
-        for (final Waypoint waypoint : waypointManager.getWaypoints()) {
+        for (final Waypoint waypoint : waypointManager.getActiveWaypoints()) {
             waypointRenderer.render(waypoint, cameraPos, cameraRotation);
         }
     }
@@ -124,11 +133,18 @@ public final class SimpleWaypointsMod {
         }
 
         if (quickWaypointKey.isPressed()) {
-            final Waypoint quickPoint = new Waypoint("[+]", (int) Math.floor(mc.player.posX),
-                    (int) Math.floor(mc.player.posY + mc.player.eyeHeight), (int) Math.floor(mc.player.posZ),
-                    RANDOM.nextInt(0xFFFFFF + 1));
+            final Waypoint quickPoint = new Waypoint("[+]", waypointManager.getActiveGroup(),
+                    (int) Math.floor(mc.player.posX), (int) Math.floor(mc.player.posY + mc.player.eyeHeight),
+                    (int) Math.floor(mc.player.posZ), RANDOM.nextInt(0xFFFFFF + 1));
             waypointManager.addWaypoint(quickPoint);
             waypointManager.save();
+        }
+
+        if (cycleGroupKey.isPressed()) {
+            waypointManager.cycleActiveGroup();
+            Minecraft.getMinecraft().player.sendStatusMessage(
+                    new TextComponentString(String.format("Waypoint Group: %s", waypointManager.getActiveGroup())),
+                    true);
         }
     }
 }

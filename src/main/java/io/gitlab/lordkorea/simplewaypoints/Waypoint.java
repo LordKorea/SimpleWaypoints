@@ -18,6 +18,11 @@ public class Waypoint {
     private final String name;
 
     /**
+     * The waypoint group this waypoint is in.
+     */
+    private final String group;
+
+    /**
      * The x position of this waypoint.
      */
     private final int x;

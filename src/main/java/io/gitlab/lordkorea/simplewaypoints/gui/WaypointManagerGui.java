@@ -32,11 +32,6 @@ public class WaypointManagerGui extends GuiDesigner implements Consumer<Button> 
     private Button browseWaypointsButton;
 
     /**
-     * The button which is used for deleting waypoints.
-     */
-    private Button deleteWaypointsButton;
-
-    /**
      * Constructor.
      */
     public WaypointManagerGui(final WaypointManager manager) {
@@ -47,9 +42,9 @@ public class WaypointManagerGui extends GuiDesigner implements Consumer<Button> 
     @Override
     public void accept(final Button buttonElement) {
         if (buttonElement == createWaypointButton) {
-            mc.displayGuiScreen(new WaypointEditorGui(this, manager, null));
+            mc.displayGuiScreen(new WaypointEditorGui(() -> this, manager, null));
         } else if (buttonElement == browseWaypointsButton) {
-            mc.displayGuiScreen(new WaypointBrowserGui(this, manager, 0));
+            mc.displayGuiScreen(new WaypointGroupBrowserGui(() -> this, manager));
         }
     }
 
